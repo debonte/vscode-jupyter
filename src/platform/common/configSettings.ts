@@ -236,6 +236,7 @@ export class JupyterSettings implements IWatchableJupyterSettings {
         // Special case poetryPath. It actually comes from the python settings
         if (pythonConfig) {
             replacer('poetryPath', pythonConfig);
+            replacer('pylanceLspNotebooksEnabled', pythonConfig);
         }
     }
 
