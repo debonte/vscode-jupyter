@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 'use strict';
-import { inject, injectable, named } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { ConfigurationChangeEvent, NotebookDocument, Uri } from 'vscode';
 import { IExtensionSyncActivationService } from '../platform/activation/types';
 import { IPythonExtensionChecker } from '../platform/api/types';
 import { IVSCodeNotebook, IWorkspaceService } from '../platform/common/application/types';
-import { IDisposableRegistry, IConfigurationService, IsPreRelease, IOutputChannel } from '../platform/common/types';
+import { IDisposableRegistry, IConfigurationService, IsPreRelease } from '../platform/common/types';
 import { IInterpreterService } from '../platform/interpreter/contracts';
 import { PythonEnvironment } from '../platform/pythonEnvironments/info';
 import { getInterpreterId } from '../platform/pythonEnvironments/info/interpreter';
@@ -17,7 +17,6 @@ import { IInteractiveWindowProvider } from '../interactive-window/types';
 import { IVSCodeNotebookController } from '../notebooks/controllers/types';
 import { getComparisonKey } from '../platform/vscode-path/resources';
 import { NotebookPythonPathService } from './notebookPythonPathService';
-import { STANDARD_OUTPUT_CHANNEL } from '../platform/common/constants';
 
 const EmptyWorkspaceKey = '';
 
@@ -45,7 +44,6 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
         @inject(IConfigurationService) private readonly configService: IConfigurationService,
         @inject(IsPreRelease) private readonly isPreRelease: Promise<boolean>,
         @inject(NotebookPythonPathService) private readonly notebookPythonPathService: NotebookPythonPathService,
-        @inject(IOutputChannel) @named(STANDARD_OUTPUT_CHANNEL) private readonly output: IOutputChannel,
     ) {}
 
     public activate() {
@@ -103,7 +101,6 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
 
     private async controllerChanged(e: { notebook: NotebookDocument; controller: IVSCodeNotebookController }) {
         if (!this.notebookPythonPathService.isEnabled()) {
-            this.output.appendLine(`IntelliSenseProvider.controllerChanged: Legacy behavior`);
             // Create the language server for this connection
             const newServer = await this.ensureLanguageServer(e.controller.connection.interpreter, e.notebook);
 
@@ -125,9 +122,6 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
                 newServer.startWatching(e.notebook);
             }
         }
-        else {
-            this.output.appendLine(`IntelliSenseProvider.controllerChanged: LSP behavior`);
-        }
 
         // Update the new controller
         this.knownControllers.set(e.notebook, e.controller);
@@ -135,8 +129,6 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
 
     private async openedNotebook(n: NotebookDocument) {
         if (isJupyterNotebook(n) && this.extensionChecker.isPythonExtensionInstalled && !this.notebookPythonPathService.isEnabled()) {
-            this.output.appendLine(`IntelliSenseProvider.openedNotebook: Legacy behavior`);
-
             // Create a language server as soon as we open. Otherwise intellisense will wait until we run.
             const controller = this.notebookControllerManager.getSelectedNotebookController(n);
 
@@ -157,9 +149,6 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
             if (server) {
                 server.startWatching(n);
             }
-        }
-        else {
-            this.output.appendLine(`IntelliSenseProvider.openedNotebook: LSP behavior (or no-Python behavior)`);
         }
     }
 
