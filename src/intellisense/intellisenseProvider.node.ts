@@ -43,7 +43,7 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
         @inject(IInteractiveWindowProvider) private readonly interactiveWindowProvider: IInteractiveWindowProvider,
         @inject(IConfigurationService) private readonly configService: IConfigurationService,
         @inject(IsPreRelease) private readonly isPreRelease: Promise<boolean>,
-        @inject(NotebookPythonPathService) private readonly notebookPythonPathService: NotebookPythonPathService,
+        @inject(NotebookPythonPathService) private readonly notebookPythonPathService: NotebookPythonPathService
     ) {}
 
     public activate() {
@@ -128,7 +128,11 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
     }
 
     private async openedNotebook(n: NotebookDocument) {
-        if (isJupyterNotebook(n) && this.extensionChecker.isPythonExtensionInstalled && !this.notebookPythonPathService.isEnabled()) {
+        if (
+            isJupyterNotebook(n) &&
+            this.extensionChecker.isPythonExtensionInstalled &&
+            !this.notebookPythonPathService.isEnabled()
+        ) {
             // Create a language server as soon as we open. Otherwise intellisense will wait until we run.
             const controller = this.notebookControllerManager.getSelectedNotebookController(n);
 
