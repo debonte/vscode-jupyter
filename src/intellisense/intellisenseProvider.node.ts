@@ -100,7 +100,7 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
     }
 
     private async controllerChanged(e: { notebook: NotebookDocument; controller: IVSCodeNotebookController }) {
-        if (!this.notebookPythonPathService.isEnabled()) {
+        if (!this.notebookPythonPathService.isPylanceUsingLspNotebooks()) {
             // Create the language server for this connection
             const newServer = await this.ensureLanguageServer(e.controller.connection.interpreter, e.notebook);
 
@@ -131,7 +131,7 @@ export class IntellisenseProvider implements INotebookLanguageClientProvider, IE
         if (
             isJupyterNotebook(n) &&
             this.extensionChecker.isPythonExtensionInstalled &&
-            !this.notebookPythonPathService.isEnabled()
+            !this.notebookPythonPathService.isPylanceUsingLspNotebooks()
         ) {
             // Create a language server as soon as we open. Otherwise intellisense will wait until we run.
             const controller = this.notebookControllerManager.getSelectedNotebookController(n);
